@@ -2,8 +2,9 @@ import urllib2
 import json
 from bs4 import BeautifulSoup
 from EuropeanCountries import countries
+from EUCountries import EU_countries
 
-file = open('List_of_countries_by_English-speaking_population.txt', 'w')
+file = open('List_of_EUcountries_by_English-speaking_population.json', 'w')
 
 url = "https://en.wikipedia.org/wiki/List_of_countries_by_English-speaking_population"
 page = urllib2.urlopen(url)
@@ -12,13 +13,15 @@ soup = BeautifulSoup(page)
 
 country = ""
 english_speakers = ""
-data = []
+European_data = []
+EU_data = []
 
 table = soup.find("table", "wikitable sortable")
 
 for row in table.findAll("tr")[1:]:
     
     tmpDict = {}
+
     cells = row.findAll("td")
 
     country = cells[0].findAll(text=True)
@@ -27,11 +30,19 @@ for row in table.findAll("tr")[1:]:
     country_value = country[1]
     eng_speakers_value = eng_speakers[0]
 
+    """
     if(country_value in countries):
         tmpDict['country'] = country_value
         tmpDict['percentage of english speakers'] = eng_speakers_value
-        data.append(tmpDict)
+        European_data.append(tmpDict)
         print country_value, eng_speakers_value
-
-file.write(json.dumps(data))
+    """
+    
+    if(country_value in EU_countries):
+        tmpDict['country'] = country_value
+        tmpDict['percentage of engilsh speakers'] = eng_speakers_value
+        EU_data.append(tmpDict)
+        print country_value, eng_speakers_value
+    
+file.write(json.dumps(EU_data))
     
