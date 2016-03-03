@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from EuropeanCountries import countries
 from EUCountries import EU_countries
 
-file = open('List_of_EUcountries_by_English-speaking_population.json', 'w')
+file = open('../../data/EU_english.json', 'w')
 
 url = "https://en.wikipedia.org/wiki/List_of_countries_by_English-speaking_population"
 page = urllib2.urlopen(url)
@@ -42,7 +42,10 @@ for row in table.findAll("tr")[1:]:
         tmpDict['country'] = country_value
         tmpDict['percentage of engilsh speakers'] = eng_speakers_value
         EU_data.append(tmpDict)
-        print country_value, eng_speakers_value
-    
+        #print country_value, eng_speakers_value
+
+# the data of Ireland is missing from the wiki website
+EU_data.append({"country": "Ireland", "percentage of engilsh speakers": "94"})
+   
 file.write(json.dumps(EU_data))
     

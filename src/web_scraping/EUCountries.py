@@ -18,4 +18,3 @@ for row in table.findAll("tr")[1:]:
     #print(EU_country[0])
 
     EU_countries.append(EU_country[0])
-  

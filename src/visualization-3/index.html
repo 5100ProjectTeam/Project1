@@ -1,0 +1,95 @@
+<html>
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<style>
+body { font-family: "Open Sans";}
+svg { margin:20px; background-color: #eee; }
+.bar rect { fill: #ccc; }
+.axis path { fill: none; stroke: black;}
+.axis line { stroke: black; }
+.axis text { font-size: x-small; }
+.dullorange { fill: rgb(255, 167, 94); }
+</style>
+</head>
+<body>
+<div id="bar_plot"></div>
+<script>
+var height = 500;
+var width = 3000;
+var padding = 20;
+
+var svg = d3.select("#bar_plot").append("svg")
+.attr("height", height)
+.attr("width", width);
+
+var EU_english = [];
+var EU_unemployment = [];
+var countries = [];
+
+
+d3.json("../data/EU_english.json", function(error, data){
+	if(error){ console.log(error) };
+	//extract json data
+    data.forEach(function(d){
+        EU_english.push({country:d["country"], percentage:d["percentage of engilsh speakers"]});
+    });
+
+    //extract csv data
+    d3.csv("../data/EU_unemployment_rate.csv", function(error, data){
+        if(error){ console.log(error); };
+        data.forEach(function(d){
+            EU_unemployment.push({pos:d.Pos, name:d.Name, value:d.Value});
+        });
+
+        // sort the data lexicographically
+        EU_unemployment.sort(function(a, b){
+            return a.value-b.value;
+        });
+
+        EU_unemployment.forEach(function(d){
+            countries.push(d.name);
+        });
+        
+        EU_english.sort(function(a, b){
+        	return countries.indexOf(a.country)-countries.indexOf(b.country);
+        });
+
+        var xPoints = d3.scale.ordinal()
+        .domain(countries)
+        .rangePoints([padding, width-padding], 1.0);
+
+        var radiusScale = d3.scale.linear()
+        .domain([d3.min(EU_unemployment, function(d){ return parseInt(d.value);}), 
+        	d3.max(EU_unemployment, function(d){ return parseInt(d.value);})])
+        .range([5, 50]);
+        
+        var shadeScale = d3.scale.linear()
+        .domain([d3.min(EU_english, function(d){return d.percentage;}),
+        	d3.max(EU_english, function(d){return d.percentage;})])
+        .range([1, 5]);
+        console.log(shadeScale(97.74));
+
+        var circles = svg.selectAll("circle")
+        .data(EU_unemployment)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d){
+        	return xPoints(d.name);
+        })
+        .attr("cy", height/2)
+        .attr("r", function(d){
+        	return radiusScale(d.value);
+        })
+
+        circles
+        .data(EU_english)
+        .style("fill", function(d){
+            return d3.rgb(135, 206, 235).darker(shadeScale(d.percentage));
+        })
+
+    });
+    
+});
+</script>
+</body>
+</html>
