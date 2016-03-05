@@ -1,0 +1,137 @@
+<html>
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<style>
+body { font-family: "Open Sans";}
+svg { margin:20px; background-color: #eee; }
+.bar rect { fill: #ccc; }
+.axis path { fill: none; stroke: black;}
+.axis line { stroke: black; }
+.axis text { font-size: x-small; }
+.dullorange { fill: rgb(255, 167, 94); }
+h1{
+	padding-left: 20px;
+	padding-top: 20px;
+}
+</style>
+</head>
+
+<body>
+	<div id="histogram">
+		<h1>Unemployment rate and education expenditure rate in major european countires</h1>
+		<script>
+			var width = 1800;
+			var height = 800;
+			var padding =50;
+			var svg3 = d3.select("#histogram").append("svg").attr("width",width).attr("height", height);
+
+			var EU_unemployment = [];
+			var EU_education = [];
+			var countries = [];
+
+			d3.csv("../../data/EU_unemployment_rate_v2.csv", function (error, rows) {
+				if (error) {console.log(error);}
+				rows.forEach(function (d) {
+					EU_unemployment.push({country:d["Name"], value:d["Value"]});
+				})
+				// console.log(EU_unemployment);
+				// generate the country name array as ticks of the x-axis lexicographically
+				EU_unemployment.forEach(function (d){
+					countries.push(d.country);
+				})
+
+				d3.csv("../../data/EU_education_expenditures.csv", function (error, rows) {
+					if (error) {console.log(error);}
+					rows.forEach(function (d){
+						EU_education.push({country:d.Name, value:d.Value});
+					})
+
+					var xMin=0;
+					var xMax = 280;
+					var xScale = d3.scale.linear().domain([xMin,xMax]).range([padding, width-padding]);
+					var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(28).tickFormat(function (d,i){
+						return countries[i];
+					});
+					var x_axis = svg3.append("g").attr("transform", "translate(" + 0 +","+ (height-150) + ")").attr("class", "axis").call(xAxis).selectAll("text")
+					.attr("transform", "translate(50,0)")
+					.style("text-anchor", "end")
+					.style("font-size", "23px")
+					.attr("dx", "-.2em")
+					.attr("transform","rotate(-65)");
+
+					var unemploymentScale = d3.scale.linear().domain([0,24.5]).range([0, 0.45*height]);
+					var educationScale = d3.scale.linear().domain([0,8.7]).range([0, 0.45*height]);
+
+					//unemployment rate rect
+					EU_unemployment.forEach(function (p,i){
+						svg3.append("rect").attr("x", -15+padding+(i)*(width-2*padding)/EU_unemployment.length)
+						.attr("y", height-150-unemploymentScale(p.value))
+						.attr("width", "30px")
+						.attr("height",unemploymentScale(p.value) )
+						.attr("fill","grey");
+
+						var curCountry = p.country;
+						var curEducationRate=0;
+						for(var j=0; j<EU_education.length; j++){
+							if(EU_education[j].country == curCountry) {
+								curEducationRate=EU_education[j].value;
+								break;
+							}
+								
+						}
+						console.log(curEducationRate);
+						//education expenditure rect drawing
+						svg3.append("rect").attr("x", -15+padding+(i)*(width-2*padding)/EU_unemployment.length)
+						.attr("y", height-150-unemploymentScale(p.value)-educationScale(curEducationRate))
+						.attr("width", "30px")
+						.attr("height",educationScale(curEducationRate))
+						.attr("fill",function () {
+							// console.log(curEducationRate);
+							// if(curEducationRate > 6) return "green";
+							// else return "rgb(255,255,0)";
+							return "rgb(255,255,0)";
+						});//
+					})
+
+				})
+				
+			svg3.append("rect").attr("x", 0.8*width)
+				.attr("y", 0.1*height)
+				.attr("width", "80px")
+				.attr("height", "20px")
+				.attr("fill","grey");
+			svg3.append("text").attr("x", 0.80*width+90)
+				.attr("y", 0.1*height+15)
+				.text("EU_unemployment_rate")
+				.style("font-size", "20px");
+
+			svg3.append("rect").attr("x", 0.8*width)
+				.attr("y", 0.05*height)
+				.attr("width", "80px")
+				.attr("height", "20px")
+				.attr("fill","yellow");
+			svg3.append("text").attr("x", 0.8*width+90)
+				.attr("y", 0.05*height+15)
+				.text("EU_education_expenditure_rate")
+				.style("font-size", "20px");
+
+				//test
+				// var xPoints = d3.scale.ordinal()
+				// 	.domain(countries)
+				// 	.rangePoints([50, width-50], 1.0);
+
+				// countries.forEach(function (p){
+				// 	svg.append("text").attr("x", xPoints(p))
+				// 	.attr("y", 200)
+				// 	.text(p);
+				// 	svg.selectAll("text")
+				// 	.style("text-anchor", "end")
+				// 	.attr("dx", "-.8em")
+				// 	.attr("dy", ".15dm")
+				// 	.attr("transform","rotate(-65)");
+				// })
+			})
+		</script>
+	</div>
+
+</body>
