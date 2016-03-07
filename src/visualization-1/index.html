@@ -4,38 +4,86 @@
         <meta charset="utf-8">
         <title>D3: Setting path fills</title>
         <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="http://d3js.org/topojson.v1.min.js"></script>
         <style type="text/css">
-            /* No style rules here yet */       
+            /* No style rules here yet */    
+
+            path {
+              stroke:white;
+              stroke-width: 0.2;
+             
+            }   
         </style>
     </head>
     <body>
         <script type="text/javascript">
-            //Width and height
+
+ 
+       //Width and height
             var w = 1000;
             var h = 800;
+
+            var minimumColor = "#deebf7", maximumColor = "#08306B";
+
+            var color = d3.scale.linear().domain([0.0, 56.0]).range([minimumColor, maximumColor]);
+
+
             //Define map projection
             var projection = d3.geo.azimuthalEquidistant()
-                                   .translate([w/2, h/2])
+                                   .translate([w/2, h])
                                    .scale([500]);
+         
             //Define path generator
-            var path = d3.geo.path()
+           var path = d3.geo.path()
                              .projection(projection);
+
             //Create SVG element
             var svg = d3.select("body")
                         .append("svg")
                         .attr("width", w)
                         .attr("height", h);
+
+            var g = svg.append("g")
+                    /*.call(d3.behavior.zoom()
+                    .scaleExtent([1, 10])
+                    .on("zoom", zoom));*/
+
+            var countries = svg.append("g");
             //Load in GeoJSON data
-            d3.json("europe.json", function(json) {
+            d3.json("output.json", function(error, shapes) {
+              d3.csv("unemprate.csv", function(error, unemprate) {
+                var rateByID = {};
+
+                unemprate.forEach(function (d) {
+                  rateByID[d.id] = +d.rate;
+                });
+
                 //Bind data and create one path per GeoJSON feature
-                svg.selectAll("path")
-                   .data(json.features)
-                   .enter()
-                   .append("path")
-                   .attr("d", path)
-                   .attr("transform", "translate(0,300)")
-                   .style("fill", "steelblue");
+               /*countries = topojson.feature(shapes, shapes.objects.europe).features;
+            var countryPaths = svg.append("g");
+             countryPaths.selectAll("path").data(countries).enter()
+                .append("path")
+                .attr("d", path)
+                .style("fill", );*/
+
+                g.append("g")
+                .attr("class", "states")
+                .selectAll("path")
+                .data(topojson.feature(shapes, shapes.objects.europe).features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .style("fill", function(d) {
+                  return color(rateByID[d.id]);
+                });
+
+
+           });
+
             });
+
+
+          
         </script>
     </body>
 </html>
