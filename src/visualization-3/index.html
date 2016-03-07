@@ -12,84 +12,172 @@ svg { margin:20px; background-color: #eee; }
 </style>
 </head>
 <body>
-<div id="bar_plot"></div>
+<div id="plot"></div>
 <script>
-var height = 500;
-var width = 3000;
-var padding = 20;
+var height = 800;
+var width = 1220;
+var top_margin = 50;
+var bottom_margin = 50;
+var padding = 50;
 
-var svg = d3.select("#bar_plot").append("svg")
-.attr("height", height)
-.attr("width", width);
+var svgContainer = d3.select("#plot")
+.append("svg")
+.attr("width", width)
+.attr("height", height);
 
-var EU_english = [];
-var EU_unemployment = [];
-var countries = [];
+var countries = ["Greece", "Spain", "France", "Germany"];
+
+var factors = ["Unemployment Rate", "GDP", "Dropout Rate"];
+
+var years = ["2006", "2007", "2008", "2009", "2010", "2011", "2012",
+"2013", "2014"];
+
+var lineData = [
+[{"x": 0, "y": height/4}, {"x": width, "y": height/4}],
+[{"x": 0, "y": height/2}, {"x":width, "y": height/2}],
+[{"x":0, "y": 3*height/4}, {"x": width, "y": 3*height/4}],
+];
+
+// ordinal scale used by country names
+var yCountries = d3.scale.ordinal()
+.domain(countries)
+.rangePoints([0, height], 1.0);
 
 
-d3.json("../data/EU_english.json", function(error, data){
-	if(error){ console.log(error) };
-	//extract json data
-    data.forEach(function(d){
-        EU_english.push({country:d["country"], percentage:d["percentage of engilsh speakers"]});
-    });
-
-    //extract csv data
-    d3.csv("../data/EU_unemployment_rate.csv", function(error, data){
-        if(error){ console.log(error); };
-        data.forEach(function(d){
-            EU_unemployment.push({pos:d.Pos, name:d.Name, value:d.Value});
-        });
-
-        // sort the data lexicographically
-        EU_unemployment.sort(function(a, b){
-            return a.value-b.value;
-        });
-
-        EU_unemployment.forEach(function(d){
-            countries.push(d.name);
-        });
-        
-        EU_english.sort(function(a, b){
-        	return countries.indexOf(a.country)-countries.indexOf(b.country);
-        });
-
-        var xPoints = d3.scale.ordinal()
-        .domain(countries)
-        .rangePoints([padding, width-padding], 1.0);
-
-        var radiusScale = d3.scale.linear()
-        .domain([d3.min(EU_unemployment, function(d){ return parseInt(d.value);}), 
-        	d3.max(EU_unemployment, function(d){ return parseInt(d.value);})])
-        .range([5, 50]);
-        
-        var shadeScale = d3.scale.linear()
-        .domain([d3.min(EU_english, function(d){return d.percentage;}),
-        	d3.max(EU_english, function(d){return d.percentage;})])
-        .range([1, 5]);
-        console.log(shadeScale(97.74));
-
-        var circles = svg.selectAll("circle")
-        .data(EU_unemployment)
-        .enter()
-        .append("circle")
-        .attr("cx", function(d){
-        	return xPoints(d.name);
-        })
-        .attr("cy", height/2)
-        .attr("r", function(d){
-        	return radiusScale(d.value);
-        })
-
-        circles
-        .data(EU_english)
-        .style("fill", function(d){
-            return d3.rgb(135, 206, 235).darker(shadeScale(d.percentage));
-        })
-
-    });
-    
+//generate text elements indicating country names 
+countries.forEach(function(d){
+    svgContainer.append("text")
+    .attr("x", padding)
+    .attr("y", yCountries(d))
+    .style("text-anchor", "middle")
+    .style("font-family", "Georgia")
+    .text(d);
 });
+
+// generate seperating horizontal lines
+var lineGenerator = d3.svg.line()
+    .x(function(d){return d.x;})
+    .y(function(d){return d.y;})
+    .interpolate("linear");
+
+lineData.forEach(function(data){
+    svgContainer.append("path")
+    .attr("d", lineGenerator(data))
+    .attr("stroke", "blue")
+    .attr("stroke-width", "2px")
+    .attr("fill", "none");
+});
+
+// generate text elements indicating three different factors that we're focusing on
+var factorGenerator = function(x, y){
+    var yFactors = d3.scale.ordinal()
+    .domain(factors)
+    .rangePoints([x, y], 1.0);
+
+    factors.forEach(function(d){
+        svgContainer.append("text")
+        .attr("x", 3*padding)
+        .attr("y", yFactors(d))
+        .style("text-anchor", "middle")
+        .style("font-family", "Serial")
+        .style("font-size", "10px")
+        .style("fill", "red")
+        .text(d);
+    });
+}
+
+factorGenerator(padding/2, height/4);
+factorGenerator(height/4+padding/2, height/2);
+factorGenerator(height/2+padding/2, (3*height)/4);
+factorGenerator((3*height)/4+padding/2, height);
+
+//generate text elements representing years
+var xYears = d3.scale.ordinal()
+.domain(years)
+.rangePoints([padding*5, width-17], 1.0)
+
+years.forEach(function(d){
+    svgContainer.append("text")
+    .attr("x", xYears(d))
+    .attr("y", padding/3)
+    .style("text-anchor", "middle")
+    .style("font-family", "Courier New")
+    .style("font-size", "15px")
+    .style("fill", "blue")
+    .text(d);
+});
+//var rectGenerator;
+function processCSV(filename, yValue, r, g, b){
+    d3.csv(filename)
+    .row(function(d){return {time: d.TIME, country: d.GEO, value: d.Value};})
+    .get(function(error, rows){ 
+        // generate the partioned rectangle for each year
+        function rectGenerator(country, increment){
+            var arr = [];
+            years.forEach(function(d, i){
+                var result = rows.filter(function(data){
+                    return data.country === country && data.time === d; 
+                });
+                arr.push({index: i, value: result[0].value.replace(/,/g, '')});
+            });
+
+            // sort the array in ascending order
+            arr.sort(function(a, b){
+                return parseFloat(a.value)-parseFloat(b.value);
+            });
+
+            var tmpX = [];
+            arr.forEach(function(d){
+                tmpX.push(d.index);
+            });
+     
+            tmpX.push(9);
+            var tmpY = [1, 2, 3];
+            var xRect = d3.scale.ordinal()
+            .domain(tmpX)
+            .rangePoints([230, width], 0.4);
+
+            var rectRange = xRect.range();
+            var rectWidth = rectRange[1]-rectRange[0];
+
+            //color scale for Greece's unemployment rates
+            var greece_Unemployment_Color_Scale = d3.scale.linear()
+            .domain([d3.min(arr, function(d){ return parseFloat(d.value);}), d3.max(arr, 
+                function(d){ return parseFloat(d.value);})])
+            .range([0, 1]);
+
+            // generate scale for the height of rectangle
+            var yRect = d3.scale.ordinal()
+            .domain(tmpY)
+            .rangeBands([increment+padding/2, increment+height/4], 0.5);
+
+            var rectHeight = yRect.rangeBand();
+
+            //generate one rectangle for each particular year, with one color of different darknesses
+            svgContainer.append("g")
+            .selectAll("rect")
+            .data(arr)
+            .enter()
+            .append("rect")
+            .attr("x", function(d){ return xRect(d.index);})
+            .attr("y", increment+yValue)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+            .style("stroke", "none")
+            .style("stroke-width", "0px")
+            .style("fill", function(d){
+                return d3.rgb(r, g, b).darker(greece_Unemployment_Color_Scale(d.value));
+            });
+        }
+        rectGenerator("Greece", 0);
+        rectGenerator("Spain", height/4);
+        rectGenerator("France", height/2);
+        rectGenerator("Germany", (3*height)/4);
+    });
+}
+processCSV("../../data/unemployment_youth_truncated.csv", (3*padding)/4, 144, 238, 144);
+processCSV("../../data/gdp_truncated.csv", (3*padding)/4+60, 135, 206, 235);
+processCSV("../../data/early_leaver_truncated.csv", height/4-padding+7, 255, 255, 0);
 </script>
 </body>
 </html>
