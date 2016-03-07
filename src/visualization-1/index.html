@@ -60,8 +60,8 @@
 
             var countries = svg.append("g");
             //Load in GeoJSON data
-            d3.json("output.json", function(error, shapes) {
-              d3.csv("unemprate.csv", function(error, unemprate) {
+            d3.json("../../data/output.json", function(error, shapes) {
+              d3.csv("../../data/unemprate.csv", function(error, unemprate) {
                 var rateByID = {};
                 var nameByID = {};
 
