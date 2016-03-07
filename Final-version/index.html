@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>INFO 5100: Project 1</title>
+        <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="http://d3js.org/topojson.v1.min.js"></script>
+        <style type="text/css">
+            /* No style rules here yet */    
+            body { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;}
+
+            #visualization1 path {stroke:white;stroke-width: 1.2;}   
+            #visualization1 .axis text {font-size: 0.8em;}
+			      #visualization1 .axis line, .axis path {
+				      fill: none;
+				      stroke: #000;
+				      shape-rendering: crispEdges;
+            }
+
+            #v1_title{
+              padding-left: 20px;
+              padding-top: 20px;
+              text-align: center;
+            }
+
+            #visualization1 .text_legend{font-size: 0.8em;}
+            
+            #visualization2 svg { margin:20px; background-color: white; /*Priya changes */ }
+            #visualization2 .bar rect { fill: #ccc; }
+            #visualization2 .axis path { fill: none; stroke: black;}
+            #visualization2 .axis line { stroke: black; }
+            #visualization2 .axis text { font-size: x-small; }
+            #visualization2 .dullorange { fill: rgb(255, 167, 94); }
+            #v2_title{
+              padding-left: 20px;
+              padding-top: 20px;
+              text-align: center; /* Priya: changes */
+            }
+
+            #plot svg { margin:20px; background-color: white; }
+            #plot .bar rect { fill: #ccc; }
+            #plot .axis path { fill: none; stroke: black;}
+            #plot .axis line { stroke: black; }
+            #plot .axis text { font-size: small; }
+            #plot .dullorange { fill: rgb(255, 167, 94); }
+            #plot h1 {  text-align: center;  /* Priya: changes */ }
+            #v3_title{
+              padding-left: 20px;
+              padding-top: 60px;
+              text-align: center; /* Priya: changes */
+            }
+
+            #v1_title, #v2_title, #v3_title{font-size: 1.5em;}
+        </style>
+
+    </head>
+    <body>
+        <div id="visualization1">
+
+         <h1 id="v1_title"> Youth Unemployment Rate: All European Union countries</h1>
+
+        <script type="text/javascript">
+
+ 
+       //Width and height
+            var w = 1000;//1000
+            var h = 800;//1050
+
+            var minimumColor = "#fcfbfd", maximumColor = "#3f007d";
+
+            var color = d3.scale.linear().domain([0.0, 49.0]).range([minimumColor, maximumColor]);
+
+
+            //Define map projection
+            var projection = d3.geo.azimuthalEquidistant()
+                                   .translate([w/4, 1.6*h])
+                                   .scale([1000]);
+         
+            //Define path generator
+           var path = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG element
+            var svg = d3.select("#visualization1")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+
+            var g = svg.append("g")
+                    /*.call(d3.behavior.zoom()
+                    .scaleExtent([1, 10])
+                    .on("zoom", zoom));*/
+
+            var countries = svg.append("g");
+            //Load in GeoJSON data
+            d3.json("output.json", function(error, shapes) {
+              d3.csv("unemprate.csv", function(error, unemprate) {
+                var rateByID = {};
+                var nameByID = {};
+
+                unemprate.forEach(function (d) {
+                  rateByID[d.id] = +d.rate;
+                  nameByID[d.id] = d.id;
+                });
+
+
+                g.append("g")
+                .attr("class", "states")
+                .selectAll("path")
+                .data(topojson.feature(shapes, shapes.objects.europe).features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .style("fill", function(d) {
+                  return color(rateByID[d.id]);
+                });
+
+                g.append("g")
+        				.attr("class", "states-names")
+        				.selectAll("text")
+        				.data(topojson.feature(shapes, shapes.objects.europe).features)
+        				.enter()
+        				.append("svg:text")
+  				      .text(function(d){
+    			         	return nameByID[d.id];
+  			         	})
+  				      .attr("x", function(d){
+      			     	return path.centroid(d)[0];
+  				        })
+  			       	.attr("y", function(d){
+      				    return  path.centroid(d)[1];
+  				        })
+  				      .attr("text-anchor","middle") 
+  				      .attr('fill', 'black')
+                .style("font-size","0.7em");
+
+             });
+
+            });
+			
+            var w1 = 100, h1 = 350;
+
+      			var legend = g.append("defs")
+      			.append("svg:linearGradient")
+      			.attr("id", "gradient")
+      			.attr("x1", "100%")
+      			.attr("y1", "0%")
+      			.attr("x2", "100%")
+      			.attr("y2", "100%")
+      			.attr("spreadMethod", "pad");
+
+      			legend.append("stop")
+      			.attr("offset", "0%")
+      			.attr("stop-color", "#3f007d")
+      			.attr("stop-opacity", 1);
+
+      			legend.append("stop")
+      			.attr("offset", "100%")
+      			.attr("stop-color", "#fcfbfd")
+      			.attr("stop-opacity", 1);
+
+      			g.append("rect")
+      			.attr("width", w1 - 58)
+      			.attr("height", h1 - 50)
+      			.style("fill", "url(#gradient)")
+      			.attr("transform", "translate(880,50)");
+
+            g.append("rect")
+            .attr("width", w1-60)
+            .attr("height", 25)
+            .style("fill", "black")
+            .attr("transform", "translate(880,400)");
+
+            g.append("text")
+            .attr("class","text_legend")
+            .attr("transform", "translate(995,375)")
+            .attr("y", 30).attr("dy", "1em")
+            .style("text-anchor", "end").text("Data N/A");
+            
+
+      			var y = d3.scale.linear()
+      			.range([300, 0])
+      			.domain([0, 50]);
+
+        			var yAxis = d3.svg.axis().scale(y).orient("right").ticks(6);
+
+        			g.append("g").attr("class", "y axis")
+        			.attr("transform", "translate(920,50)")
+        			.call(yAxis).append("text")
+        			.attr("transform", "rotate(-90)")
+        			.attr("y", 30).attr("dy", "1.4em")
+        			.style("text-anchor", "end").text("Unemployment Rate");
+
+
+        </script>
+      </div>
+
+
+
+        <div id="visualization2">
+    <h1 id="v2_title">Youth Unemployment Rate (Past 10 years): Greece, Spain, France &amp; Germany </h1>
+    <script>
+      var width = 1200;
+      var height = 600;
+      var padding =50;
+      var svg3 = d3.select("#visualization2").append("svg").attr("width",width).attr("height", height);
+      // draw x-axis first
+      var xMin=2005.5;
+      var xMax=2015.5;
+      var xScale = d3.scale.linear().domain([xMin,xMax]).range([padding, width-2*padding]);
+      var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(10).tickFormat(d3.format("d"));
+      var x_axis = svg3.append("g").attr("transform", "translate("+0+","+(height-50)+")").attr("class", "axis").call(xAxis).selectAll("text").style("font-size", "20px");
+      //draw y-axis 
+      var yMin=0;
+      var yMax=0.63;
+      var yScale = d3.scale.linear().domain([yMin,yMax]).range([height-padding, padding]);
+      var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(10).tickFormat(d3.format(".0%"));
+      var y_axis = svg3.append("g").attr("transform", "translate("+padding+","+0+")").attr("class","axis").call(yAxis).selectAll("text").style("font-size","20px");
+
+      var greece_youth_unem_rate = [];
+      var spain_youth_unem_rate= [];
+      var france__youth_unem_rate = [];
+      var germany_youth_unem_rate = [];
+      var year=[];
+      // var color=[{country: "Greece", color:"red"}, {country: "Spain", color:"black"}, {country:"France", color: "blue"}, {country:"Germany", color:"green"}];
+      var colorCountry = ["#084081", "#8c6bb1", "#dd3497", "#1d91c0"]; /*Priya changes */
+      var countryName=["Greece", "Spain", "France", "Germany"];
+      for(var i=0; i<10; i++){
+        year.push(2006+i);
+      }
+
+      d3.csv("unemployment_youth_truncated.csv", function (error, rows) {
+        if (error) {console.log(error);}
+        rows.forEach(function (d){
+          if(d["GEO"] == "Greece") greece_youth_unem_rate.push(d["Value"]);
+          else if(d["GEO"] == "Spain") spain_youth_unem_rate.push(d["Value"]);
+          else if(d["GEO"] == "France") france__youth_unem_rate.push(d["Value"]);
+          else if(d["GEO"] == "Germany")germany_youth_unem_rate.push(d["Value"]);
+          else {};
+        })
+        
+        var countries=[greece_youth_unem_rate,spain_youth_unem_rate,france__youth_unem_rate,germany_youth_unem_rate];
+        console.log(countries);
+        // use for-loop to draw each path for each country
+        for(var i=0; i<4; i++){
+          var countryArray=countries[i];
+          var line = d3.svg.line().x(function (dd) {return xScale(year[countryArray.indexOf(dd)])}).y(function (dd){return yScale(dd/100)});
+
+          svg3.append("path").attr("d", line(countryArray)).attr("fill","none").attr("stroke",function (){
+            return colorCountry[i];
+          }).attr("stroke-width", "5px"); /*priya changes */
+
+          svg3.append("text").text(countryName[i]).attr("x", width-3.1/*Priya-changes8*/*padding).attr("y",yScale(countryArray[9]/100)).style("fill", function (){
+            return colorCountry[i];
+          }).style("font-size", "1.2em")
+        }
+      });
+
+      
+    </script>
+  </div>
+
+      <div id="plot">
+        <h1 id="v3_title"> Youth Unemployment Rate: Influencing Factors </h1>
+      </div>
+      <script>
+var height = 800;
+var width = 1220;
+var top_margin = 50;
+var bottom_margin = 50;
+var padding = 50;
+
+var svgContainer = d3.select("#plot")
+.append("svg")
+.attr("width", width)
+.attr("height", height);
+
+var countries = ["Greece", "Spain", "France", "Germany"];
+
+var factors = ["Unemployment Rate", "GDP", "Dropout Rate"];
+
+var years = ["2006", "2007", "2008", "2009", "2010", "2011", "2012",
+"2013", "2014"];
+
+var lineData = [
+[{"x": 0, "y": height/4}, {"x": width, "y": height/4}],
+[{"x": 0, "y": height/2}, {"x":width, "y": height/2}],
+[{"x":0, "y": 3*height/4}, {"x": width, "y": 3*height/4}],
+];
+
+// ordinal scale used by country names
+var yCountries = d3.scale.ordinal()
+.domain(countries)
+.rangePoints([0, height], 1.0);
+
+
+//generate text elements indicating country names 
+countries.forEach(function(d){
+    svgContainer.append("text")
+    .attr("x", padding)
+    .attr("y", yCountries(d))
+    .style("text-anchor", "middle")
+   /* .style("font-family", "Georgia") */
+    .style("font-size", "20px")
+    .text(d);
+});
+
+// generate seperating horizontal lines
+var lineGenerator = d3.svg.line()
+    .x(function(d){return d.x;})
+    .y(function(d){return d.y;})
+    .interpolate("linear");
+
+lineData.forEach(function(data){
+    svgContainer.append("path")
+    .attr("d", lineGenerator(data))
+    .attr("stroke", "blue")
+    .attr("stroke-width", "2px")
+    .attr("fill", "none");
+});
+
+// generate text elements indicating three different factors that we're focusing on
+var factorGenerator = function(x, y){
+    var yFactors = d3.scale.ordinal()
+    .domain(factors)
+    .rangePoints([x, y], 1.0);
+
+    factors.forEach(function(d){
+        svgContainer.append("text")
+        .attr("x", 3*padding)
+        .attr("y", yFactors(d))
+        .style("text-anchor", "middle")
+       /* .style("font-family", "Serial") */
+        .style("font-size", "17px")
+        .style("fill", "blue")
+        .text(d);
+    });
+}
+
+factorGenerator(padding/2, height/4);
+factorGenerator(height/4+padding/2, height/2);
+factorGenerator(height/2+padding/2, (3*height)/4);
+factorGenerator((3*height)/4+padding/2, height);
+
+//generate text elements representing years
+var xYears = d3.scale.ordinal()
+.domain(years)
+.rangePoints([padding*5, width-17], 1.0)
+
+years.forEach(function(d){
+    svgContainer.append("text")
+    .attr("x", xYears(d))
+    .attr("y", padding/3)
+    .style("text-anchor", "middle")
+    .style("font-family", "Courier New")
+    .style("font-size", "20px")
+    .style("fill", "blue")
+    .text(d);
+});
+//var rectGenerator;
+function processCSV(filename, yValue, r, g, b){
+    d3.csv(filename)
+    .row(function(d){return {time: d.TIME, country: d.GEO, value: d.Value};})
+    .get(function(error, rows){ 
+        // generate the partioned rectangle for each year
+        function rectGenerator(country, increment){
+            var arr = [];
+            years.forEach(function(d, i){
+                var result = rows.filter(function(data){
+                    return data.country === country && data.time === d; 
+                });
+                arr.push({index: i, value: result[0].value.replace(/,/g, '')});
+            });
+
+            // sort the array in ascending order
+            arr.sort(function(a, b){
+                return parseFloat(a.value)-parseFloat(b.value);
+            });
+
+            var tmpX = [];
+            arr.forEach(function(d){
+                tmpX.push(d.index);
+            });
+     
+            tmpX.push(9);
+            var tmpY = [1, 2, 3];
+            var xRect = d3.scale.ordinal()
+            .domain(tmpX)
+            .rangePoints([230, width], 0.4);
+
+            var rectRange = xRect.range();
+            var rectWidth = rectRange[1]-rectRange[0];
+
+            //color scale for Greece's unemployment rates
+            var greece_Unemployment_Color_Scale = d3.scale.linear()
+            .domain([d3.min(arr, function(d){ return parseFloat(d.value);}), d3.max(arr, 
+                function(d){ return parseFloat(d.value);})])
+            .range([0, 1.5]);
+
+            // generate scale for the height of rectangle
+            var yRect = d3.scale.ordinal()
+            .domain(tmpY)
+            .rangeBands([increment+padding/2, increment+height/4], 0.5);
+
+            var rectHeight = yRect.rangeBand();
+
+            //generate one rectangle for each particular year, with one color of different darknesses
+            svgContainer.append("g")
+            .selectAll("rect")
+            .data(arr)
+            .enter()
+            .append("rect")
+            .attr("x", function(d){ return xRect(d.index);})
+            .attr("y", increment+yValue)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+            .style("stroke", "none")
+            .style("stroke-width", "0px")
+            .style("fill", function(d){
+                return d3.rgb(r, g, b).darker(greece_Unemployment_Color_Scale(d.value));
+            });
+        }
+        rectGenerator("Greece", 0);
+        rectGenerator("Spain", height/4);
+        rectGenerator("France", height/2);
+        rectGenerator("Germany", (3*height)/4);
+    });
+}
+processCSV("unemployment_youth_truncated.csv", (3*padding)/4, 103,169,207);
+processCSV("gdp_truncated.csv", (3*padding)/4+60, 158,154,200);
+processCSV("early_leaver_truncated.csv", height/4-padding+7, 250,159,181);
+</script>
+    </body>
+</html>
