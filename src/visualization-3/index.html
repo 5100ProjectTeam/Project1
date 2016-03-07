@@ -29,7 +29,6 @@ var countries = ["Greece", "Spain", "France", "Germany"];
 
 var factors = ["Unemployment Rate", "GDP", "Dropout Rate"];
 
-<<<<<<< HEAD
 var years = ["2006", "2007", "2008", "2009", "2010", "2011", "2012",
 "2013", "2014"];
 
@@ -68,67 +67,6 @@ lineData.forEach(function(data){
     .attr("stroke-width", "2px")
     .attr("fill", "none");
 });
-=======
-d3.json("../../data/EU_english.json", function(error, data){
-	if(error){ console.log(error) };
-	//extract json data
-    data.forEach(function(d){
-        EU_english.push({country:d["country"], percentage:d["percentage of engilsh speakers"]});
-    });
-
-    //extract csv data
-    d3.csv("../../data/EU_unemployment_rate.csv", function(error, data){
-        if(error){ console.log(error); };
-        data.forEach(function(d){
-            EU_unemployment.push({pos:d.Pos, name:d.Name, value:d.Value});
-        });
-
-        // sort the data lexicographically
-        EU_unemployment.sort(function(a, b){
-            return a.value-b.value;
-        });
-
-        EU_unemployment.forEach(function(d){
-            countries.push(d.name);
-        });
-        
-        EU_english.sort(function(a, b){
-        	return countries.indexOf(a.country)-countries.indexOf(b.country);
-        });
-
-        var xPoints = d3.scale.ordinal()
-        .domain(countries)
-        .rangePoints([padding, width-padding], 1.0);
-
-        var radiusScale = d3.scale.linear()
-        .domain([d3.min(EU_unemployment, function(d){ return parseInt(d.value);}), 
-        	d3.max(EU_unemployment, function(d){ return parseInt(d.value);})])
-        .range([5, 50]);
-        
-        var shadeScale = d3.scale.linear()
-        .domain([d3.min(EU_english, function(d){return d.percentage;}),
-        	d3.max(EU_english, function(d){return d.percentage;})])
-        .range([1, 5]);
-        console.log(shadeScale(97.74));
-
-        var circles = svg.selectAll("circle")
-        .data(EU_unemployment)
-        .enter()
-        .append("circle")
-        .attr("cx", function(d){
-        	return xPoints(d.name);
-        })
-        .attr("cy", height/2)
-        .attr("r", function(d){
-        	return radiusScale(d.value);
-        })
-
-        circles
-        .data(EU_english)
-        .style("fill", function(d){
-            return d3.rgb(135, 206, 235).darker(shadeScale(d.percentage));
-        })
->>>>>>> 9c6179c7c411d383c37cd9217526b7aad435238e
 
 // generate text elements indicating three different factors that we're focusing on
 var factorGenerator = function(x, y){
