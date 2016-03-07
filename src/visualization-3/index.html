@@ -27,7 +27,7 @@ var EU_unemployment = [];
 var countries = [];
 
 
-d3.json("../data/EU_english.json", function(error, data){
+d3.json("../../data/EU_english.json", function(error, data){
 	if(error){ console.log(error) };
 	//extract json data
     data.forEach(function(d){
@@ -35,7 +35,7 @@ d3.json("../data/EU_english.json", function(error, data){
     });
 
     //extract csv data
-    d3.csv("../data/EU_unemployment_rate.csv", function(error, data){
+    d3.csv("../../data/EU_unemployment_rate.csv", function(error, data){
         if(error){ console.log(error); };
         data.forEach(function(d){
             EU_unemployment.push({pos:d.Pos, name:d.Name, value:d.Value});

@@ -9,7 +9,7 @@ svg { margin:20px; background-color: #eee; }
 .axis line { stroke: black; }
 .axis text { font-size: x-small; }
 .dullorange { fill: rgb(255, 167, 94); }
-h1{
+#v2_title{
 	padding-left: 20px;
 	padding-top: 20px;
 }
@@ -17,120 +17,66 @@ h1{
 </head>
 
 <body>
-	<div id="histogram">
-		<h1>Unemployment rate and education expenditure rate in major european countires</h1>
+	<div id="visualization2">
+		<h1 id="v2_title">Youth Unemployment rate trend of several typical european countries in past 10 years</h1>
 		<script>
 			var width = 1800;
 			var height = 800;
-			var padding =50;
-			var svg3 = d3.select("#histogram").append("svg").attr("width",width).attr("height", height);
+			var padding =80;
+			var svg3 = d3.select("#visualization2").append("svg").attr("width",width).attr("height", height);
+			// draw x-axis first
+			var xMin=2005.5;
+			var xMax=2015.5;
+			var xScale = d3.scale.linear().domain([xMin,xMax]).range([padding, width-2*padding]);
+			var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(10).tickFormat(d3.format("d"));
+			var x_axis = svg3.append("g").attr("transform", "translate("+0+","+(height-80)+")").attr("class", "axis").call(xAxis).selectAll("text").style("font-size", "25px");
+			//draw y-axis 
+			var yMin=0;
+			var yMax=0.63;
+			var yScale = d3.scale.linear().domain([yMin,yMax]).range([height-padding, padding]);
+			var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(10).tickFormat(d3.format(".0%"));
+			var y_axis = svg3.append("g").attr("transform", "translate("+padding+","+0+")").attr("class","axis").call(yAxis).selectAll("text").style("font-size","25px");
 
-			var EU_unemployment = [];
-			var EU_education = [];
-			var countries = [];
+			var greece_youth_unem_rate = [];
+			var spain_youth_unem_rate= [];
+			var france__youth_unem_rate = [];
+			var germany_youth_unem_rate = [];
+			var year=[];
+			// var color=[{country: "Greece", color:"red"}, {country: "Spain", color:"black"}, {country:"France", color: "blue"}, {country:"Germany", color:"green"}];
+			var color = ["red", "black", "blue", "green"];
+			var countryName=["Greece", "Spain", "France", "Germany"];
+			for(var i=0; i<10; i++){
+				year.push(2006+i);
+			}
 
-			d3.csv("../../data/EU_unemployment_rate_v2.csv", function (error, rows) {
+			d3.csv("../../data/unemployment_youth_truncated.csv", function (error, rows) {
 				if (error) {console.log(error);}
-				rows.forEach(function (d) {
-					EU_unemployment.push({country:d["Name"], value:d["Value"]});
-				})
-				// console.log(EU_unemployment);
-				// generate the country name array as ticks of the x-axis lexicographically
-				EU_unemployment.forEach(function (d){
-					countries.push(d.country);
-				})
-
-				d3.csv("../../data/EU_education_expenditures.csv", function (error, rows) {
-					if (error) {console.log(error);}
-					rows.forEach(function (d){
-						EU_education.push({country:d.Name, value:d.Value});
-					})
-
-					var xMin=0;
-					var xMax = 280;
-					var xScale = d3.scale.linear().domain([xMin,xMax]).range([padding, width-padding]);
-					var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(28).tickFormat(function (d,i){
-						return countries[i];
-					});
-					var x_axis = svg3.append("g").attr("transform", "translate(" + 0 +","+ (height-150) + ")").attr("class", "axis").call(xAxis).selectAll("text")
-					.attr("transform", "translate(50,0)")
-					.style("text-anchor", "end")
-					.style("font-size", "23px")
-					.attr("dx", "-.2em")
-					.attr("transform","rotate(-65)");
-
-					var unemploymentScale = d3.scale.linear().domain([0,24.5]).range([0, 0.45*height]);
-					var educationScale = d3.scale.linear().domain([0,8.7]).range([0, 0.45*height]);
-
-					//unemployment rate rect
-					EU_unemployment.forEach(function (p,i){
-						svg3.append("rect").attr("x", -15+padding+(i)*(width-2*padding)/EU_unemployment.length)
-						.attr("y", height-150-unemploymentScale(p.value))
-						.attr("width", "30px")
-						.attr("height",unemploymentScale(p.value) )
-						.attr("fill","grey");
-
-						var curCountry = p.country;
-						var curEducationRate=0;
-						for(var j=0; j<EU_education.length; j++){
-							if(EU_education[j].country == curCountry) {
-								curEducationRate=EU_education[j].value;
-								break;
-							}
-								
-						}
-						console.log(curEducationRate);
-						//education expenditure rect drawing
-						svg3.append("rect").attr("x", -15+padding+(i)*(width-2*padding)/EU_unemployment.length)
-						.attr("y", height-150-unemploymentScale(p.value)-educationScale(curEducationRate))
-						.attr("width", "30px")
-						.attr("height",educationScale(curEducationRate))
-						.attr("fill",function () {
-							// console.log(curEducationRate);
-							// if(curEducationRate > 6) return "green";
-							// else return "rgb(255,255,0)";
-							return "rgb(255,255,0)";
-						});//
-					})
-
+				rows.forEach(function (d){
+					if(d["country"] == "Greece") greece_youth_unem_rate.push(d["rate"]);
+					else if(d["country"] == "Spain") spain_youth_unem_rate.push(d["rate"]);
+					else if(d["country"] == "France") france__youth_unem_rate.push(d["rate"]);
+					else if(d["country"] == "Germany")germany_youth_unem_rate.push(d["rate"]);
+					else {};
 				})
 				
-			svg3.append("rect").attr("x", 0.8*width)
-				.attr("y", 0.1*height)
-				.attr("width", "80px")
-				.attr("height", "20px")
-				.attr("fill","grey");
-			svg3.append("text").attr("x", 0.80*width+90)
-				.attr("y", 0.1*height+15)
-				.text("EU_unemployment_rate")
-				.style("font-size", "20px");
+				var countries=[greece_youth_unem_rate,spain_youth_unem_rate,france__youth_unem_rate,germany_youth_unem_rate];
+				console.log(countries);
+				// use for-loop to draw each path for each country
+				for(var i=0; i<4; i++){
+					var countryArray=countries[i];
+					var line = d3.svg.line().x(function (dd) {return xScale(year[countryArray.indexOf(dd)])}).y(function (dd){return yScale(dd/100)});
 
-			svg3.append("rect").attr("x", 0.8*width)
-				.attr("y", 0.05*height)
-				.attr("width", "80px")
-				.attr("height", "20px")
-				.attr("fill","yellow");
-			svg3.append("text").attr("x", 0.8*width+90)
-				.attr("y", 0.05*height+15)
-				.text("EU_education_expenditure_rate")
-				.style("font-size", "20px");
+					svg3.append("path").attr("d", line(countryArray)).attr("fill","none").attr("stroke",function (){
+						return color[i];
+					}).attr("stroke-width", "5px");
 
-				//test
-				// var xPoints = d3.scale.ordinal()
-				// 	.domain(countries)
-				// 	.rangePoints([50, width-50], 1.0);
+					svg3.append("text").text(countryName[i]).attr("x", width-2.5*padding).attr("y",yScale(countryArray[9]/100)).style("fill", function (){
+						return color[i];
+					}).style("font-size", "30px")
+				}
+			});
 
-				// countries.forEach(function (p){
-				// 	svg.append("text").attr("x", xPoints(p))
-				// 	.attr("y", 200)
-				// 	.text(p);
-				// 	svg.selectAll("text")
-				// 	.style("text-anchor", "end")
-				// 	.attr("dx", "-.8em")
-				// 	.attr("dy", ".15dm")
-				// 	.attr("transform","rotate(-65)");
-				// })
-			})
+			
 		</script>
 	</div>
 
