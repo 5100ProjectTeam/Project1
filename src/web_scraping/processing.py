@@ -74,8 +74,8 @@ def modify(filename):
 				tmp.append(row[-2])
 				data.append(tmp)
 	return data
-#data = truncate('../../unemployment_youth.csv')
-#data = prune('../../early_leaver.csv')
-data = modify('../../data/gdp.csv')
+data = truncate('../../data/unemployment_youth.csv')
+#data = prune('../../data/early_leaver.csv')
+#data = modify('../../data/gdp.csv')
 print data
-writeToCSV(data, 'gdp_truncated.csv')
+writeToCSV(data, '../../data/unemployment_youth_truncated.csv')
