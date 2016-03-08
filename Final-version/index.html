@@ -42,7 +42,14 @@
       padding: 10px;
     }
     
-
+    #description{
+      width: 1400px;
+      margin: 20px auto;
+      /*background-color: #F3FAB6;*/
+    }
+    article {
+      font-size: 23px;
+    }
     #visualization1 {
         width: 1400px;
         margin: 20px auto
@@ -65,9 +72,10 @@
     }
     
     #v1_title {
-        padding-left: 20px;
+        padding-left: 0px;
         padding-top: 20px;
-        text-align: center;
+        text-align: left;
+        font-size: 30px !important;
     }
     
     #visualization1 .text_legend {
@@ -75,8 +83,9 @@
     }
     
     #visualization2 {
-        width: 1200px;
-        margin: 20px auto
+        width: 1400px;
+
+        margin: 20px auto;
     }
     
     #visualization2 svg {
@@ -109,7 +118,8 @@
     #v2_title {
         padding-left: 20px;
         padding-top: 20px;
-        text-align: center;
+        text-align: left;
+        font-size: 30px !important;
         /* Priya: changes */
     }
     
@@ -167,11 +177,26 @@
 <body>
     <div id="header">    
       <img id="headerImg" src="../src/headerImg2.jpg" />
-      <h2><span>Youth Unemployment Matters.</span></h2>
+      <h2><span>Youth Unemployment Matters</span></h2>
+    </div>
+
+    <div id="description">
+        <article>
+            <h2>Youth Unempolyment Rate</h2>
+            <p>The young population aged from 15 to 24 can be divided into three groups:</p>
+            <ul>
+                <li>Employed</li>
+                <li>Unempoyed</li>
+                <li>Economically inactive</li>
+            </ul>
+            <!-- <p>Economically incative means a status of participating in education systems without coming into the labor market!</p> -->
+            <p>Youth unemployment rate = Unemployed 15-24 years old / Labour force 15-24 years old.</p>
+            <p>Youth unemployment is a global issue, if you think developed countries like those in EU would never suffer from it, your are wrong! Let's take a look!</p>
+        </article>
     </div>
 
     <div id="visualization1">
-        <h1 id="v1_title"> Youth Unemployment Rate: All European Union countries</h1>
+        <h1 id="v1_title"> Youth Unemployment Rate in European Union</h1>
         <script type="text/javascript">
         //Width and height
         var w = 1000; //1000
@@ -387,7 +412,7 @@
         </script>
     </div>
     <div id="plot">
-        <h1 id="v3_title"> Youth Unemployment Rate: Influencing Factors </h1>
+        <h1 id="v3_title">So what has contributed to the divergence of these countries?</h1>
     </div>
     <script>
     var height = 800;
