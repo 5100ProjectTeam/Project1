@@ -72,7 +72,7 @@ lineData.forEach(function(data){
 var factorGenerator = function(x, y){
     var yFactors = d3.scale.ordinal()
     .domain(factors)
-    .rangePoints([x, y], 1.0);
+    .rangePoints([x, y], 1.5);
 
     factors.forEach(function(d){
         svgContainer.append("text")
@@ -118,29 +118,26 @@ function processCSV(filename, yValue, r, g, b){
                 var result = rows.filter(function(data){
                     return data.country === country && data.time === d; 
                 });
-                arr.push({index: i, value: result[0].value.replace(/,/g, '')});
+                arr.push({index: i, year: d, value: result[0].value.replace(/,/g, '')});
             });
-
-            // sort the array in ascending order
-            arr.sort(function(a, b){
-                return parseFloat(a.value)-parseFloat(b.value);
-            });
-
+            
+            // generate an array of domain values
             var tmpX = [];
             arr.forEach(function(d){
                 tmpX.push(d.index);
             });
-     
-            tmpX.push(9);
+            console.log(arr);
+            // create a mapping from the index to its corresponding range point value
+            tmpX.push(arr.length);
             var tmpY = [1, 2, 3];
             var xRect = d3.scale.ordinal()
             .domain(tmpX)
             .rangePoints([230, width], 0.4);
-
+            
             var rectRange = xRect.range();
             var rectWidth = rectRange[1]-rectRange[0];
 
-            //color scale for Greece's unemployment rates
+            // color scale for Greece's unemployment rates
             var greece_Unemployment_Color_Scale = d3.scale.linear()
             .domain([d3.min(arr, function(d){ return parseFloat(d.value);}), d3.max(arr, 
                 function(d){ return parseFloat(d.value);})])
@@ -153,14 +150,14 @@ function processCSV(filename, yValue, r, g, b){
 
             var rectHeight = yRect.rangeBand();
 
-            //generate one rectangle for each particular year, with one color of different darknesses
+            // generate one rectangle for each particular year, with one color of different darknesses
             svgContainer.append("g")
             .selectAll("rect")
             .data(arr)
             .enter()
             .append("rect")
             .attr("x", function(d){ return xRect(d.index);})
-            .attr("y", increment+yValue)
+            .attr("y", yRect(yValue))
             .attr("width", rectWidth)
             .attr("height", rectHeight)
             .style("stroke", "none")
@@ -175,9 +172,9 @@ function processCSV(filename, yValue, r, g, b){
         rectGenerator("Germany", (3*height)/4);
     });
 }
-processCSV("../../data/unemployment_youth_truncated.csv", (3*padding)/4, 144, 238, 144);
-processCSV("../../data/gdp_truncated.csv", (3*padding)/4+60, 135, 206, 235);
-processCSV("../../data/early_leaver_truncated.csv", height/4-padding+7, 255, 255, 0);
+processCSV("../../data/unemployment_youth_truncated.csv", 1, 144, 238, 144);
+processCSV("../../data/gdp_truncated.csv", 2, 135, 206, 235);
+processCSV("../../data/early_leaver_truncated.csv", 3, 255, 255, 0);
 </script>
 </body>
 </html>

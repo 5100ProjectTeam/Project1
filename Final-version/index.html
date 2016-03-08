@@ -362,27 +362,24 @@ function processCSV(filename, yValue, r, g, b){
     d3.csv(filename)
     .row(function(d){return {time: d.TIME, country: d.GEO, value: d.Value};})
     .get(function(error, rows){ 
-        // generate the partioned rectangle for each year
+        //generate the partioned rectangle for each year
         function rectGenerator(country, increment){
             var arr = [];
             years.forEach(function(d, i){
                 var result = rows.filter(function(data){
                     return data.country === country && data.time === d; 
                 });
-                arr.push({index: i, value: result[0].value.replace(/,/g, '')});
+                arr.push({index: i, year: d, value: result[0].value.replace(/,/g, '')});
             });
 
-            // sort the array in ascending order
-            arr.sort(function(a, b){
-                return parseFloat(a.value)-parseFloat(b.value);
-            });
-
+            //generate an array of domain values
             var tmpX = [];
             arr.forEach(function(d){
                 tmpX.push(d.index);
             });
-     
-            tmpX.push(9);
+            
+            //create a mapping from the index to its corresponding range point value
+            tmpX.push(arr.length);
             var tmpY = [1, 2, 3];
             var xRect = d3.scale.ordinal()
             .domain(tmpX)
@@ -397,7 +394,7 @@ function processCSV(filename, yValue, r, g, b){
                 function(d){ return parseFloat(d.value);})])
             .range([0, 1.5]);
 
-            // generate scale for the height of rectangle
+            //generate scale for the height of rectangle
             var yRect = d3.scale.ordinal()
             .domain(tmpY)
             .rangeBands([increment+padding/2, increment+height/4], 0.5);
