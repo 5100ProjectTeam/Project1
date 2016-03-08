@@ -363,24 +363,48 @@ function processCSV(filename, yValue, r, g, b){
     .row(function(d){return {time: d.TIME, country: d.GEO, value: d.Value};})
     .get(function(error, rows){ 
         //generate the partioned rectangle for each year
-        function rectGenerator(country, increment){
-            var arr = [];
-            years.forEach(function(d, i){
+        var dataArr = [];
+        var values = [];
+        countries.forEach(function(country){
+            var tmp = [];
+            var baseValue;
+            years.forEach(function(year, i){
                 var result = rows.filter(function(data){
-                    return data.country === country && data.time === d; 
+                    return data.country === country && data.time === year;
                 });
-                arr.push({index: i, year: d, value: result[0].value.replace(/,/g, '')});
+                var val = parseFloat(result[0].value.replace(/,/g, ''));
+                if(year === "2006") baseValue = val;
+                var resultValue = (val-baseValue)/baseValue;
+                tmp.push({index: i, year: year, value: resultValue});
+                values.push(resultValue);
+            });
+            dataArr.push({country: country, data: tmp});
+        });
+        
+        //generate min and max values of the data
+        var minValue = d3.min(values, function(d){ return d;});
+        var maxValue = d3.max(values, function(d){ return d;});
+        
+        function rectGenerator(country, increment){
+            //extract the relevant data for the specified country
+            var tmpX = [];
+            var resultData = dataArr.filter(function(data){
+                return data.country === country;
             });
 
-            //generate an array of domain values
-            var tmpX = [];
-            arr.forEach(function(d){
+            var countryData = resultData[0].data;
+            console.log(country);
+            countryData.forEach(function(d){
+                console.log(d.value);
+            });
+
+            //generate domain values for the xRect scale
+            countryData.forEach(function(d){
                 tmpX.push(d.index);
             });
-            
-            //create a mapping from the index to its corresponding range point value
-            tmpX.push(arr.length);
-            var tmpY = [1, 2, 3];
+            tmpX.push(countryData.length);
+
+            //create xRect scale
             var xRect = d3.scale.ordinal()
             .domain(tmpX)
             .rangePoints([230, width], 0.4);
@@ -388,23 +412,24 @@ function processCSV(filename, yValue, r, g, b){
             var rectRange = xRect.range();
             var rectWidth = rectRange[1]-rectRange[0];
 
-            //color scale for Greece's unemployment rates
-            var greece_Unemployment_Color_Scale = d3.scale.linear()
-            .domain([d3.min(arr, function(d){ return parseFloat(d.value);}), d3.max(arr, 
-                function(d){ return parseFloat(d.value);})])
-            .range([0, 1.5]);
-
-            //generate scale for the height of rectangle
+            //generate a yRect scale
+            var tmpY = [1, 2, 3];
+            
             var yRect = d3.scale.ordinal()
             .domain(tmpY)
             .rangeBands([increment+padding/2, increment+height/4], 0.5);
-
+            
             var rectHeight = yRect.rangeBand();
-
-            //generate one rectangle for each particular year, with one color of different darknesses
+            
+            //color scale for Greece's unemployment rates
+            var colorScale = d3.scale.linear()
+            .domain([minValue, maxValue])
+            .range([0, 2.5]);
+            
+            //generate the rectangles for the specified country, one rectangle per year, with one color of different darknesses
             svgContainer.append("g")
             .selectAll("rect")
-            .data(arr)
+            .data(countryData)
             .enter()
             .append("rect")
             .attr("x", function(d){ return xRect(d.index);})
@@ -414,9 +439,10 @@ function processCSV(filename, yValue, r, g, b){
             .style("stroke", "none")
             .style("stroke-width", "0px")
             .style("fill", function(d){
-                return d3.rgb(r, g, b).darker(greece_Unemployment_Color_Scale(d.value));
+                return d3.rgb(r, g, b).darker(colorScale(d.value));
             });
-        }
+        } 
+        
         rectGenerator("Greece", 0);
         rectGenerator("Spain", height/4);
         rectGenerator("France", height/2);
