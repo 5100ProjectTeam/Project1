@@ -411,7 +411,7 @@ g.append("text")
             })
 
             var countries = [greece_youth_unem_rate, spain_youth_unem_rate, france__youth_unem_rate, germany_youth_unem_rate];
-            console.log(countries);
+
             // use for-loop to draw each path for each country
             for (var i = 0; i < 4; i++) {
                 var countryArray = countries[i];
@@ -494,7 +494,6 @@ g.append("text")
             .attr("x", padding)
             .attr("y", yCountries(d))
             .style("text-anchor", "middle")
-            /* .style("font-family", "Georgia") */
             .style("font-size", "20px")
             .text(d);
     });
@@ -528,7 +527,6 @@ g.append("text")
                 .attr("x", 3 * padding)
                 .attr("y", yFactors(d))
                 .style("text-anchor", "middle")
-                /* .style("font-family", "Serial") */
                 .style("font-size", "17px")
                 .style("fill", "blue")
                 .text(d);
@@ -555,7 +553,7 @@ g.append("text")
             .style("fill", "blue")
             .text(d);
     });
-    //var rectGenerator;
+
     function processCSV(filename, yValue, r, g, b) {
         d3.csv(filename)
             .row(function(d) {
@@ -596,11 +594,10 @@ g.append("text")
                 var minValue = d3.min(values, function(d) {
                     return d;
                 });
-                console.log(minValue);
+
                 var maxValue = d3.max(values, function(d) {
                     return d;
                 });
-                console.log(maxValue);
 
                 function rectGenerator(country, increment) {
                     //extract the relevant data for the specified country
@@ -610,11 +607,7 @@ g.append("text")
                     });
 
                     var countryData = resultData[0].data;
-                    console.log(country);
-                    countryData.forEach(function(d) {
-                        console.log(d.value);
-                    });
-
+            
                     //generate domain values for the xRect scale
                     countryData.forEach(function(d) {
                         tmpX.push(d.index);
@@ -697,7 +690,7 @@ g.append("text")
         .style("text-anchor", "middle")
         .text("(the numeric value represents change rate)")
        
-        function generateLegend(r, g, b, min, max, yRect, yText, factor, yIncrement){
+        function generateLegend(colorString, min, max, yRect, yText, factor, yIncrement){
             //create a linear gradient
             var legendGradient = svg.append("defs")
             .append("linearGradient")
@@ -709,11 +702,11 @@ g.append("text")
 
             legendGradient.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", d3.rgb(r, g, b).darker(-1.2));
+            .attr("stop-color", d3.rgb(colorString).darker(-1.2));
 
             legendGradient.append("stop")
             .attr("offset", "100%")
-            .attr("stop-color", d3.rgb(r, g, b).darker(2.5));
+            .attr("stop-color", d3.rgb(colorString).darker(2.5));
 
             //create a rectangle represent the specific legend for the factor with the linear gradient
 
@@ -751,7 +744,6 @@ g.append("text")
             .interpolate("linear");
 
             function generateTriaTick(i){
-                console.log("Yeah!!!"+" "+yIncrement);
                 var triangleData = [{"x": tickScale(triaRangePoints[i]), "y": yIncrement+3*padding/2},
                 {"x": tickScale(triaRangePoints[i])-5, "y": yIncrement+3*padding/2+8}, 
                 {"x": tickScale(triaRangePoints[i])+5, "y": yIncrement+3*padding/2+8}];
@@ -770,13 +762,10 @@ g.append("text")
             for(var i=0; i<4; i++){
                 generateTriaTick(i);
             }
-
         }
-        generateLegend(30, 144, 255, -0.44, 2.10, padding, 3*padding/2-5, "Unemployment Rate", 0);
-        generateLegend(127, 255, 0, -0.18, 0.22, 3*padding, 7*padding/2-5, "GDP", 2*padding);
-        generateLegend(255, 99, 71, -0.40, 0.05, 5*padding, 11*padding/2-5, "Dropout Rate", 4*padding);
-
-      
+        generateLegend("#1E90FF", -0.44, 2.10, padding, 3*padding/2-5, "Unemployment Rate", 0);
+        generateLegend("#7FFF00", -0.18, 0.22, 3*padding, 7*padding/2-5, "GDP", 2*padding);
+        generateLegend("#FF6347", -0.40, 0.05, 5*padding, 11*padding/2-5, "Dropout Rate", 4*padding);
 
     </script>
 </body>
