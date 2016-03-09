@@ -42,7 +42,14 @@
       padding: 10px;
     }
     
-
+    #description{
+      width: 1400px;
+      margin: 20px auto;
+      /*background-color: #F3FAB6;*/
+    }
+    article {
+      font-size: 23px;
+    }
     #visualization1 {
         width: 1400px;
         margin: 20px auto
@@ -65,9 +72,10 @@
     }
     
     #v1_title {
-        padding-left: 20px;
+        padding-left: 0px;
         padding-top: 20px;
-        text-align: center;
+        text-align: left;
+        font-size: 30px !important;
     }
     
     #visualization1 .text_legend {
@@ -75,8 +83,9 @@
     }
     
     #visualization2 {
-        width: 1200px;
-        margin: 20px auto
+        width: 1400px;
+
+        margin: 20px auto;
     }
     
     #visualization2 svg {
@@ -105,11 +114,14 @@
     #visualization2 .dullorange {
         fill: rgb(255, 167, 94);
     }
-    
+    #visualization2 h2{
+        padding-left: 50px;
+    }
     #v2_title {
         padding-left: 20px;
         padding-top: 20px;
-        text-align: center;
+        text-align: left;
+        font-size: 30px !important;
         /* Priya: changes */
     }
     
@@ -167,147 +179,168 @@
 <body>
     <div id="header">    
       <img id="headerImg" src="../src/headerImg2.jpg" />
-      <h2><span>Youth Unemployment Matters.</span></h2>
+      <h2><span>Youth Unemployment Matters</span></h2>
+    </div>
+
+    <div id="description">
+        <article>
+            <h2>Youth Unempolyment Rate</h2>
+            <p>The young population aged from 15 to 24 can be divided into three groups:</p>
+            <ul>
+                <li>Employed</li>
+                <li>Unempoyed</li>
+                <li>Economically inactive</li>
+            </ul>
+            <!-- <p>Economically incative means a status of participating in education systems without coming into the labor market!</p> -->
+            <p>Youth unemployment rate = Unemployed 15-24 years old / Labour force 15-24 years old.</p>
+            <p>Youth unemployment is a global issue, if you think developed countries like those in EU would never suffer from it, your are wrong! Let's take a look!</p>
+        </article>
     </div>
 
     <div id="visualization1">
-        <h1 id="v1_title"> Youth Unemployment Rate: All European Union countries</h1>
-        <script type="text/javascript">
-        //Width and height
-        var w = 1000; //1000
-        var h = 800; //1050
-
-        var minimumColor = "#fcfbfd",
-            maximumColor = "#3f007d";
-
-        var color = d3.scale.linear().domain([0.0, 49.0]).range([minimumColor, maximumColor]);
-
-
-        //Define map projection
-        var projection = d3.geo.azimuthalEquidistant()
-            .translate([w / 4, 1.6 * h])
-            .scale([1000]);
-
-        //Define path generator
-        var path = d3.geo.path()
-            .projection(projection);
-
-        //Create SVG element
-        var svg = d3.select("#visualization1")
-            .append("svg")
-            .attr("width", w)
-            .attr("height", h);
-
-        var g = svg.append("g")
-            /*.call(d3.behavior.zoom()
-            .scaleExtent([1, 10])
-            .on("zoom", zoom));*/
-
-        var countries = svg.append("g");
-        //Load in GeoJSON data
-        d3.json("output.json", function(error, shapes) {
-            d3.csv("unemprate.csv", function(error, unemprate) {
-                var rateByID = {};
-                var nameByID = {};
-
-                unemprate.forEach(function(d) {
-                    rateByID[d.id] = +d.rate;
-                    nameByID[d.id] = d.id;
-                });
+<h1 id="v1_title"> Youth Unemployment Rate: All European Union countries</h1>
+<script type="text/javascript">
+//Width and height
+var w = screen.width; //1000
+var h = 800; //1050
+var legendRectSize = 100; 
+var legendSpacing = 20; 
+var rectheight=0;
+var yheight=0;
 
 
-                g.append("g")
-                    .attr("class", "states")
-                    .selectAll("path")
-                    .data(topojson.feature(shapes, shapes.objects.europe).features)
-                    .enter()
-                    .append("path")
-                    .attr("d", path)
-                    .style("fill", function(d) {
-                        return color(rateByID[d.id]);
-                    });
+var color = d3.scale.quantile().domain([0.0, 49.0]).range(["#ffffcc", "#bae4b3", "#41ab5d", "#6baed6", "#1d91c0"]);
+var color1 = d3.scale.category20b();
 
-                g.append("g")
-                    .attr("class", "states-names")
-                    .selectAll("text")
-                    .data(topojson.feature(shapes, shapes.objects.europe).features)
-                    .enter()
-                    .append("svg:text")
-                    .text(function(d) {
-                        return nameByID[d.id];
-                    })
-                    .attr("x", function(d) {
-                        return path.centroid(d)[0];
-                    })
-                    .attr("y", function(d) {
-                        return path.centroid(d)[1];
-                    })
-                    .attr("text-anchor", "middle")
-                    .attr('fill', 'black')
-                    .style("font-size", "0.7em");
+//Define map projection
+var projection = d3.geo.azimuthalEquidistant()
+.translate([w / 4, 1.6 * h])
+.scale([1000]);
 
-            });
+//Define path generator
+var path = d3.geo.path()
+.projection(projection);
 
-        });
+//Create SVG element
+var svg = d3.select("#visualization1")
+.append("svg")
+.attr("width", w)
+.attr("height", h);
 
-        var w1 = 100,
-            h1 = 350;
+var g = svg.append("g")
+/*.call(d3.behavior.zoom()
+.scaleExtent([1, 10])
+.on("zoom", zoom));*/
 
-        var legend = g.append("defs")
-            .append("svg:linearGradient")
-            .attr("id", "gradient")
-            .attr("x1", "100%")
-            .attr("y1", "0%")
-            .attr("x2", "100%")
-            .attr("y2", "100%")
-            .attr("spreadMethod", "pad");
+var countries = svg.append("g");
+//Load in GeoJSON data
+d3.json("output.json", function(error, shapes) {
+d3.csv("unemprate.csv", function(error, unemprate) {
+var rateByID = {};
+var nameByID = {};
 
-        legend.append("stop")
-            .attr("offset", "0%")
-            .attr("stop-color", "#3f007d")
-            .attr("stop-opacity", 1);
-
-        legend.append("stop")
-            .attr("offset", "100%")
-            .attr("stop-color", "#fcfbfd")
-            .attr("stop-opacity", 1);
-
-        g.append("rect")
-            .attr("width", w1 - 58)
-            .attr("height", h1 - 50)
-            .style("fill", "url(#gradient)")
-            .attr("transform", "translate(880,50)");
-
-        g.append("rect")
-            .attr("width", w1 - 60)
-            .attr("height", 25)
-            .style("fill", "black")
-            .attr("transform", "translate(880,400)");
-
-        g.append("text")
-            .attr("class", "text_legend")
-            .attr("transform", "translate(995,375)")
-            .attr("y", 30).attr("dy", "1em")
-            .style("text-anchor", "end").text("Data N/A");
+unemprate.forEach(function(d) {
+rateByID[d.id] = +d.rate;
+nameByID[d.id] = d.id;
+});
 
 
-        var y = d3.scale.linear()
-            .range([300, 0])
-            .domain([0, 50]);
+g.append("g")
+.attr("class", "states")
+.selectAll("path")
+.data(topojson.feature(shapes, shapes.objects.europe).features)
+.enter()
+.append("path")
+.attr("d", path)
+.style("fill", function(d) {
+return color(rateByID[d.id]);
+});
 
-        var yAxis = d3.svg.axis().scale(y).orient("right").ticks(6);
+g.append("g")
+.attr("class", "states-names")
+.selectAll("text")
+.data(topojson.feature(shapes, shapes.objects.europe).features)
+.enter()
+.append("svg:text")
+.text(function(d) {
+return nameByID[d.id];
+})
+.attr("x", function(d) {
+return path.centroid(d)[0];
+})
+.attr("y", function(d) {
+return path.centroid(d)[1];
+})
+.attr("text-anchor", "middle")
+.attr('fill', 'black')
+.style("font-size", "0.7em");
 
-        g.append("g").attr("class", "y axis")
-            .attr("transform", "translate(920,50)")
-            .call(yAxis).append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 30).attr("dy", "1.4em")
-            .style("text-anchor", "end").text("Unemployment Rate");
-        </script>
-    </div>
+
+});
+
+});
+
+var w1 = 100,
+h1 = 350;
+d3.csv("unemprate1.csv", function(error, unemprate) {
+var rateByID = {};
+var nameByID = {};
+var countryNameByID ={};
+
+unemprate.forEach(function(d) {
+rateByID[d.id] = +d.rate;
+nameByID[d.id] = d.id;
+countryNameByID[d.id]= d.countryName;
+
+g.append("rect") 
+.attr("class", "rect_legend") 
+.attr("width",2*rateByID[d.id] )
+.attr("height",10)
+.style("fill",color(rateByID[d.id]))
+.attr("x" ,65)
+.attr("y", yheight+20); 
+
+
+g.append("text")
+.attr("class", "text_legend_1")
+.attr("x", 35)
+.attr("y", yheight+30)
+.text(rateByID[d.id]);
+
+g.append("text")
+.attr("class", "text_legend")
+.attr("x", 2*rateByID[d.id]+70)
+.attr("y", yheight+30)
+.style("text-anchor", "start").text(countryNameByID[d.id]);
+
+yheight=yheight+15;
+
+});
+
+});
+
+g.append("rect") 
+.attr("class", "rect_legend_1") 
+.attr("width",20 )
+.attr("height",10)
+.style("fill","black")
+.attr("x" ,65)
+.attr("y", 440); 
+
+g.append("text")
+.attr("class", "text_legend_2")
+.attr("x", 90)
+.attr("y", 450)
+.text("Data N/A");
+
+
+
+</script>
+</div>
     <div id="visualization2">
         <!-- <h1 id="v2_title">Youth Unemployment Rate (Past 10 years): Greece, Spain, France &amp; Germany </h1> -->
-        <h1 id="v2_title">A historical reason of how huge differences were generated</h1>
+        <h1 id="v2_title">You can only see things through in the river of time!</h1>
+        <h2>4 typical countries are chosen too represent countries in different levels.</h2>
         <script>
         var width = 1200;
         var height = 600;
@@ -386,8 +419,13 @@
         });
         </script>
     </div>
+<<<<<<< HEAD
     <div>
         <h1 id="v3_title"> Youth Unemployment Rate: Influencing Factors </h1>
+=======
+    <div id="plot">
+        <h1 id="v3_title">So what has contributed to the divergence of these countries?</h1>
+>>>>>>> 10f8b0740e937afd6d64a20ca2415f893066db04
     </div>
     <div id="legend"></div>
     <div id="plot"></div>
