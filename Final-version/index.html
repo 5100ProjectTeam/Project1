@@ -656,7 +656,7 @@ g.append("text")
                 rectGenerator("Germany", (3 * height) / 4);
             });
     }
-    processCSV("unemployment_youth_truncated.csv", (3 * padding) / 4, 0, 191, 255);
+    processCSV("unemployment_youth_truncated.csv", (3 * padding) / 4, 30, 144, 255);
     processCSV("gdp_truncated.csv", (3 * padding) / 4 + 60, 127, 255, 0);
     processCSV("early_leaver_truncated.csv", height / 4 - padding + 7, 255, 99, 71);
     </script>
@@ -760,7 +760,7 @@ g.append("text")
             }
 
         }
-        generateLegend(0, 191, 255, -0.44, 2.10, padding, 3*padding/2-5, "Unemployment Rate", 0);
+        generateLegend(30, 144, 255, -0.44, 2.10, padding, 3*padding/2-5, "Unemployment Rate", 0);
         generateLegend(127, 255, 0, -0.18, 0.22, 3*padding, 7*padding/2-5, "GDP", 2*padding);
         generateLegend(255, 99, 71, -0.40, 0.05, 5*padding, 11*padding/2-5, "Dropout Rate", 4*padding);
 
