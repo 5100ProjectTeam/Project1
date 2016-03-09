@@ -432,12 +432,16 @@ g.append("text")
         });
         </script>
     </div>
+    <div>
+        <h1 id="v3_title"> Youth Unemployment Rate: Influencing Factors </h1>
     <div id="plot">
         <h1 id="v3_title">So what has contributed to the divergence of these countries?</h1>
     </div>
+    <div id="legend"></div>
+    <div id="plot"></div>
     <script>
     var height = 800;
-    var width = 1220;
+    var width = 1100;
     var top_margin = 50;
     var bottom_margin = 50;
     var padding = 50;
@@ -593,9 +597,11 @@ g.append("text")
                 var minValue = d3.min(values, function(d) {
                     return d;
                 });
+                console.log(minValue);
                 var maxValue = d3.max(values, function(d) {
                     return d;
                 });
+                console.log(maxValue);
 
                 function rectGenerator(country, increment) {
                     //extract the relevant data for the specified country
@@ -636,7 +642,7 @@ g.append("text")
                     //color scale for Greece's unemployment rates
                     var colorScale = d3.scale.linear()
                         .domain([minValue, maxValue])
-                        .range([0, 2.5]);
+                        .range([-1.2, 2.5]);
 
                     //generate the rectangles for the specified country, one rectangle per year, with one color of different darknesses
                     svgContainer.append("g")
@@ -663,9 +669,116 @@ g.append("text")
                 rectGenerator("Germany", (3 * height) / 4);
             });
     }
-    processCSV("unemployment_youth_truncated.csv", (3 * padding) / 4, 103, 169, 207);
-    processCSV("gdp_truncated.csv", (3 * padding) / 4 + 60, 158, 154, 200);
-    processCSV("early_leaver_truncated.csv", height / 4 - padding + 7, 250, 159, 181);
+    processCSV("unemployment_youth_truncated.csv", (3 * padding) / 4, 0, 191, 255);
+    processCSV("gdp_truncated.csv", (3 * padding) / 4 + 60, 127, 255, 0);
+    processCSV("early_leaver_truncated.csv", height / 4 - padding + 7, 255, 99, 71);
+    </script>
+    <script>
+        var newWidth = 600;
+        var newHeight = 360;
+        var padding = 50;
+        var svg = d3.select("#legend")
+        .append("svg")
+        .attr("width", newWidth)
+        .attr("height", newHeight);
+
+        svg.append("text")
+        .attr("x", 5*padding)
+        .attr("y", padding/3)
+        .style("font-size", "20px")
+        .style("fill", "red")
+        .style("text-anchor", "middle")
+        .text("Legend")
+
+        svg.append("text")
+        .attr("x", 5*padding)
+        .attr("y", padding/3+15)
+        .style("font-size", "10px")
+        .style("fill", "red")
+        .style("text-anchor", "middle")
+        .text("(the numeric value represents change rate)")
+       
+        function generateLegend(r, g, b, min, max, yRect, yText, factor, yIncrement){
+            //create a linear gradient
+            var legendGradient = svg.append("defs")
+            .append("linearGradient")
+            .attr("id", "legendGradient")
+            .attr("x1", "0%")
+            .attr("y1", "100%")
+            .attr("x2", "100%")
+            .attr("y2", "100%");
+
+            legendGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", d3.rgb(r, g, b).darker(-1.2));
+
+            legendGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.rgb(r, g, b).darker(2.5));
+
+            //create a rectangle represent the specific legend for the factor with the linear gradient
+
+            svg.append("rect")
+            .attr("x", 5*padding)
+            .attr("y", yRect)
+            .attr("width", newWidth-6*padding)
+            .attr("height", padding/2)
+            .style("fill", "url(#legendGradient)");
+
+            //append the text of the rectangle
+            svg.append("text")
+            .attr("x", 2*padding+17)
+            .attr("y", yText)
+            .style("text-anchor", "middle")
+            .style("font-family", "Times New Roman")
+            .style("font-size", "14px")
+            .text(factor);
+            
+            //create scale for the triangle tick associated with the legend bar
+            var triaTickScale = d3.scale.ordinal()
+            .domain([1,2,3,4])
+            .rangePoints([min, max]);
+            
+            var triaRangePoints = triaTickScale.range();
+
+            var tickScale = d3.scale.linear()
+            .domain([min, max])
+            .range([5*padding, newWidth-padding]);
+
+            //create a triangle generator 
+            var triangleGenerator = d3.svg.line()
+            .x(function(d){ return d.x;})
+            .y(function(d){ return d.y;})
+            .interpolate("linear");
+
+            function generateTriaTick(i){
+                console.log("Yeah!!!"+" "+yIncrement);
+                var triangleData = [{"x": tickScale(triaRangePoints[i]), "y": yIncrement+3*padding/2},
+                {"x": tickScale(triaRangePoints[i])-5, "y": yIncrement+3*padding/2+8}, 
+                {"x": tickScale(triaRangePoints[i])+5, "y": yIncrement+3*padding/2+8}];
+
+                svg.append("path")
+                .attr("d", triangleGenerator(triangleData))
+                .style("fill", "black");
+
+                svg.append("text")
+                .attr("x", tickScale(triaRangePoints[i]))
+                .attr("y", yIncrement+3*padding/2+30)
+                .style("text-anchor", "middle")
+                .text(triaRangePoints[i].toFixed(2));
+
+            }
+            for(var i=0; i<4; i++){
+                generateTriaTick(i);
+            }
+
+        }
+        generateLegend(0, 191, 255, -0.44, 2.10, padding, 3*padding/2-5, "Unemployment Rate", 0);
+        generateLegend(127, 255, 0, -0.18, 0.22, 3*padding, 7*padding/2-5, "GDP", 2*padding);
+        generateLegend(255, 99, 71, -0.40, 0.05, 5*padding, 11*padding/2-5, "Dropout Rate", 4*padding);
+
+      
+
     </script>
 </body>
 
